@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  db:
+  postgres:
     image: postgres:15-alpine
     container_name: yardd_postgres
     restart: always
@@ -13,6 +13,33 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: yardd_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - DB_HOST=postgres
+      - DB_USERNAME=yardd_user
+      - DB_PASSWORD=secure_password_123
+      - DB_NAME=yardd_db
+      - JWT_SECRET=production_yardd_secret_key_2026
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    container_name: yardd_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
